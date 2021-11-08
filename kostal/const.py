@@ -82,6 +82,12 @@ InfoVersions = {
     "CountrySettingsVersion": {"dxsId": 16779521, "unit": ""},
 }
 
+InfoInverter = {
+    "Unknown": {"dxsId": 16780288, "unit": ""},
+    "InverterName": {"dxsId": 16777984, "unit": ""},
+    "InverterType": {"dxsId": 16780544, "unit": ""},
+}
+
 StatisticDay = {
     "Yield": {"dxsId": 251658754, "unit": "Wh"},
     "HomeConsumption": {"dxsId": 251659010, "unit": "Wh"},

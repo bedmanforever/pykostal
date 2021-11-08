@@ -124,12 +124,27 @@ class Piko:
 
     async def __fetch_dxs_entry(self, entry_ids: []):
         if len(entry_ids) > 0:
-            request_params = []
-            for i in range(0, len(entry_ids)):
-                request_params.append(("dxsEntries", entry_ids[i]))
-            print(request_params)
-            r = await self.__fetch_data(request_params)
-            return DxsResponse(**r).get_entry_by_id(entry_ids)
+            # Kostal API is only returning max 25 entries - if entry_ids contains more than 25 entries we will split up the request
+            splits = round(len(entry_ids) / 25) + 1
+            dxsEntries_result = {"dxsEntries": [], "session": {}, "status": {}}
+            for i in range(0, splits):
+                request_params = []
+                split_start = i * 25
+                split_end = (i + 1) * 25
+                for k in range(split_start, split_end):
+                    if k < len(entry_ids):
+                        request_params.append(("dxsEntries", entry_ids[k]))
+                        # print(request_params)
+                    else:
+                        break
+                # Check if any request_params (dxsId) is given, otherwise don't call the API
+                if len(request_params) > 0:
+                    r = await self.__fetch_data(request_params)
+                    dxsEntries_result["dxsEntries"].extend(r["dxsEntries"])
+                    dxsEntries_result["session"] = r["session"]
+                    dxsEntries_result["status"] = r["status"]
+
+            return DxsResponse(**dxsEntries_result).get_entry_by_id(entry_ids)
 
     def __generate_query_results(self, dxs_entries, query_object):
         query_results = {}
@@ -177,6 +192,7 @@ class Piko:
         return query_result
 
     async def get_all(self):
+        # Build List of elements that should be queried. This will be the structure for the response
         query_elements = {
             "ActualAnalogInputs": const.ActualAnalogInputs,
             "ActualBattery": const.ActualBattery,
@@ -186,12 +202,120 @@ class Piko:
             "ActualSZeroIn": const.ActualSZeroIn,
             "Home": const.Home,
             "InfoVersions": const.InfoVersions,
+            "InfoInverter": const.InfoInverter,
             "StatisticDay": const.StatisticDay,
             "StatisticTotal": const.StatisticTotal,
         }
-        print(query_elements)
-        # print(list(map(operator.itemgetter("dxsId"), query_elements)))
-        # entry_ids = list(map(operator.itemgetter("dxsId"), query_elements))
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_actual_analog_inputs(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "ActualAnalogInputs": const.ActualAnalogInputs,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_actual_battery(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "ActualBattery": const.ActualBattery,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_actual_grid(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "ActualGrid": const.ActualGrid,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_actual_house(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "ActualHouse": const.ActualHouse,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_actual_pv_generator(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "ActualPVGenerator": const.ActualPVGenerator,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_actual_szero_in(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "ActualSZeroIn": const.ActualSZeroIn,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_actual_home(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "Home": const.Home,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_info_versions(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "InfoVersions": const.InfoVersions,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_info_inverter(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "InfoInverter": const.InfoInverter,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_statistic_day(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "StatisticDay": const.StatisticDay,
+        }
+        entry_ids = self.__get_all_dxsIds(query_elements)
+        dxs_entries = await self.__fetch_dxs_entry(entry_ids)
+        query_result = self.__generate_query_results(dxs_entries, query_elements)
+        return query_result
+
+    async def get_statistic_total(self):
+        # Build List of elements that should be queried. This will be the structure for the response
+        query_elements = {
+            "StatisticTotal": const.StatisticTotal,
+        }
         entry_ids = self.__get_all_dxsIds(query_elements)
         dxs_entries = await self.__fetch_dxs_entry(entry_ids)
         query_result = self.__generate_query_results(dxs_entries, query_elements)
