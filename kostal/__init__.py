@@ -113,13 +113,17 @@ class Piko:
                 ) as resp:
                     assert resp.status == 200
                     return await resp.json(content_type="text/plain")
-        except (asyncio.TimeoutError, aiohttp.ClientError):
+        except (asyncio.TimeoutError, aiohttp.ClientError) as err:
             raise ConnectionError(
-                "Connection to Kostal device failed at {}.".format(self.__url)
+                "Connection to Kostal device failed at {} with error {}".format(
+                    self.__url, err
+                )
             )
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as err:
             raise ValueError(
-                "Device returned a non-JSON reply at {}.".format(self.__url)
+                "Device returned a non-JSON reply at {} with error {}".format(
+                    self.__url, err
+                )
             )
 
     async def __fetch_dxs_entry(self, entry_ids: []):

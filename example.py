@@ -15,6 +15,9 @@ async def main(loop, host):
         res = await inverter.day_yield()
         print(f"day yield: {res}")
 
+        res = await inverter.get_info_inverter()
+        print(f"all inverter info: {res}")
+
         res = await inverter.get_all()
         print(f"all entries: {res}")
 
