@@ -128,25 +128,20 @@ class Piko:
 
     async def __fetch_dxs_entry(self, entry_ids: []):
         if len(entry_ids) > 0:
-            # Kostal API is only returning max 25 entries - if entry_ids contains more than 25 entries we will split up the request
-            splits = round(len(entry_ids) / 25) + 1
+            # Define basic result structure to later populate it with the API results
             dxsEntries_result = {"dxsEntries": [], "session": {}, "status": {}}
-            for i in range(0, splits):
-                request_params = []
-                split_start = i * 25
-                split_end = (i + 1) * 25
-                for k in range(split_start, split_end):
-                    if k < len(entry_ids):
-                        request_params.append(("dxsEntries", entry_ids[k]))
-                        # print(request_params)
-                    else:
-                        break
-                # Check if any request_params (dxsId) is given, otherwise don't call the API
-                if len(request_params) > 0:
-                    r = await self.__fetch_data(request_params)
-                    dxsEntries_result["dxsEntries"].extend(r["dxsEntries"])
-                    dxsEntries_result["session"] = r["session"]
-                    dxsEntries_result["status"] = r["status"]
+
+            # Kostal API is only returning max 25 entries - if entry_ids contains more than 25 entries we will split up the request
+            splits = [entry_ids[pos : pos + 25] for pos in range(0, len(entry_ids), 25)]
+
+            # request needs to be a list of tuples of [(key, value)] if the key is not unique, because dict is not support non-unique keys
+            requests = [[("dxsEntries", id) for id in split] for split in splits]
+
+            for request in requests:
+                res = await self.__fetch_data(request)
+                dxsEntries_result["dxsEntries"].extend(res["dxsEntries"])
+                dxsEntries_result["session"] = res["session"]
+                dxsEntries_result["status"] = res["status"]
 
             return DxsResponse(**dxsEntries_result).get_entry_by_id(entry_ids)
 
@@ -154,9 +149,9 @@ class Piko:
         query_results = {}
         found_matching_entry = False
         for dxs_entry in dxs_entries:
-            print("Searching for ", dxs_entry.dxsId)
+            # print("Searching for ", dxs_entry.dxsId)
             for groupname, group_dxs_entries in query_object.items():
-                print("Checking ", groupname)
+                # print("Checking ", groupname)
                 for (
                     query_dxs_entryname,
                     query_dxs_entryvalues,
@@ -169,13 +164,13 @@ class Piko:
                             {query_dxs_entryname: query_dxs_entryvalues}
                         )
                         found_matching_entry = True
-                        print("Found Matching entry for ", query_dxs_entryvalues)
+                        # print("Found Matching entry for ", query_dxs_entryvalues)
                         break
 
                 if found_matching_entry:
                     found_matching_entry = False
                     break
-        print(query_results)
+        # print(query_results)
         return query_results
 
     def __get_all_dxsIds(self, query_elements):
@@ -183,9 +178,9 @@ class Piko:
         found_matching_entry = False
         for group in query_elements.values():
             for query_dxs_entryvalues in group.values():
-                print("Checking ", query_dxs_entryvalues)
+                # print("Checking ", query_dxs_entryvalues)
                 dxsIds.append(query_dxs_entryvalues["dxsId"])
-        print(dxsIds)
+        # print(dxsIds)
         return dxsIds
 
     async def day_yield(self):
