@@ -18,7 +18,7 @@ async def main(loop, host):
         res = await inverter.get_info_inverter()
         print(f"all inverter info: {res}")
 
-        res = await inverter.get_all()
+        res = await inverter.get_all_entries()
         print(f"all entries: {res}")
 
 

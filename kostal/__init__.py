@@ -190,7 +190,7 @@ class Piko:
         query_result = self.__generate_query_results(dxs_entries, query_elements)
         return query_result
 
-    async def get_all(self):
+    async def get_all_entries(self):
         # Build List of elements that should be queried. This will be the structure for the response
         query_elements = {
             "ActualAnalogInputs": const.ActualAnalogInputs,
